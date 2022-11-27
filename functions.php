@@ -185,16 +185,22 @@ function makePost($text, $userId, $privacy){
     reload("index.php", "postCreated");
 }
 
-function getNameFromId($userId){
+function getDisplayNameFromId($userId){
     return ucfirst(getDatabaseData("displayName", "user", "id = '$userId'")[0]["displayName"]);
 }
 
 function isFriends($user1, $user2){
-    return isset(getDatabaseData("*", "friends", "friendId = '$user1' AND user_id = '$user2' OR friendId = '$user2' AND user_id = '$user1'")[0]);
+    $a = isset(getDatabaseData("*", "friends", "friendId = '$user1' AND user_id = '$user2'")[0]);
+    $b = isset(getDatabaseData("*", "friends", "friendId = '$user2' AND user_id = '$user1'")[0]);
+    if($a && $b){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 function generateAllHtmlPost(){
-    $allPosts = getDatabaseData("*", "post", "", "id DESC");
+    $allPosts = getDatabaseData("*", "post", "active = '1'", "id DESC");
     $content = "";    
 
     foreach($allPosts as $post){
@@ -217,29 +223,60 @@ function generateAllHtmlPost(){
         }else if($privacy == "Private" && $post["user_id"] != $_SESSION["activeUserId"] && getUserLevel($_SESSION["activeUserId"]) != "2"){
             continue;
         }
-
-        if($_SESSION["activeUserId"] == $post["user_id"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
-            $b = "onclick=\"return confirm('Är du säker att du vill ta bort detta inlägget?')\"";
-            $x = '<a href="manager.php?action=deletePost&postId='.$post["id"].'" '.$b.'>Delete Post</a>';
-        }else{
-            $x = "";
-        }
-
-        $displayname = getNameFromId($post["user_id"]);
-        $content .= '
-        <section>
-        <div class="postHead">
-        <h4>'.$displayname.'</h4> <h5>'.$privacy.'</h5>
-        </div>
-        <div class="postHead">
-        <h5>Created: '.$post["created"].'</h5>
-        '.$x.'
-        </div>
-        <p>'.$post["text"].'</p>
-        <a href="post.php?postId='.$post["id"].'">Gå till inlägget</a>
-        </section>
-        ';
+        $content .= getPostHtml($post["id"], true);
     }
+    return $content;
+}
+
+function getPostHtml($postId, $linkToPost=false){
+    $post = getDatabaseData("*", "post", "id = '$postId' AND active = '1'", "id DESC");
+    if(isset($post[0])){
+        $post = $post[0];
+    }else{
+        reload("index.php");
+    }
+    if($_SESSION["activeUserId"] == $post["user_id"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
+        $b = "onclick=\"return confirm('Är du säker att du vill ta bort detta inlägget?')\"";
+        $x = '<a href="manager.php?action=deletePost&postId='.$post["id"].'" '.$b.'>Delete Post</a>';
+    }else{
+        $x = "";
+    }
+
+    if($linkToPost){
+        $link = '<a href="post.php?postId='.$postId.'">Gå till inlägget</a>';
+    }else{
+        $link = "";
+    }
+
+    switch($post["privacy"]){
+        case "0":
+            $privacy = "Public";
+            break;
+        case "1":
+            $privacy = "Friends";
+            break;
+        case "2":
+            $privacy = "Private";
+            break;
+    }
+
+    $content = "";
+
+    $displayname = getDisplayNameFromId($post["user_id"]);
+    $content .= '
+    <section>
+    <div class="postHead">
+    <h4>'.$displayname.'</h4> <h5>'.$privacy.'</h5>
+    </div>
+    <div class="postHead">
+    <h5>Created: '.$post["created"].'</h5>
+    '.$x.'
+    </div>
+    <p>'.$post["text"].'</p>
+    '.$link.'
+    </section>
+    ';
+
     return $content;
 }
 
@@ -248,19 +285,18 @@ function getUserLevel($userId){
 }
 
 function deletePost($postId){
-    $postOwnerId = getDatabaseData("user_id", "post", "id = '$postId'")[0]["user_id"];
+    $postOwnerId = getDatabaseData("user_id", "post", "id = '$postId' AND active = '1'")[0]["user_id"];
 
     if($postOwnerId == $_SESSION["activeUserId"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
-        removeDatabaseData("post", "id = '$postId'");
+        updateDatabaseData("post", "active = 0", "id='$postId'");
     }
     reload("index.php");
 }
 
 function checkAccsesToPost($userId, $postId){
-    $x = getDatabaseData("user_id, privacy", "post", "id='$postId'")[0];
+    $x = getDatabaseData("user_id, privacy", "post", "id='$postId' AND active = '1'")[0];
     switch($x["privacy"]){
         case "0":
-            echo "<h1>HEJEEJH</h1>";
             return true;
             break;
         case "1":
@@ -279,6 +315,58 @@ function checkAccsesToPost($userId, $postId){
             break;
     }
 
+}
+
+function makeComment($comment, $postId, $commmentUserId){
+    if(!isset(getDatabaseData("id", "post", "id='$postId' AND active = '1'")[0])){
+        reload("index.php");
+    }
+    if(!checkAccsesToPost($commmentUserId, $postId)){
+        reload("index.php?mess=jajaj");
+    }
+
+    sendDatabaseData("comment", "text, user_id, post_id", "'$comment', '$commmentUserId', '$postId'");
+    reload("post.php?postId=".$postId);
+}
+
+function loadAllCommentHtml($postId){
+    $comments = getDatabaseData("*", "comment", "post_id = '$postId'", "id DESC");
+    $owner = getDatabaseData("user_id", "post", "id = '$postId' AND active = '1'")[0];
+
+    $content = "";
+    foreach($comments as $comment){
+        $x = "";
+
+        if($comment["user_id"] == $_SESSION["activeUserId"] || intval(getUserLevel($_SESSION["activeUserId"])) > 0 || $owner["user_id"] == $_SESSION["activeUserId"]){
+            $x = '<a href="manager.php?action=deleteComment&commentId='.$comment["id"].'" onclick="return confirm(\'Är du säker att du vill ta bort denna kommentar?\')">Delete comment</a>';
+        }
+
+        $content.= 
+        '<section class="comment">
+        <div class="postHead">
+        <h4>'.getDisplayNameFromId($comment["user_id"]).'</h4>'.$x.'
+        </div>
+        <div class="postHead"><h5>Created: '.$comment["created"].'</h5></div>
+        <p>'.$comment["text"].'</p>
+    </section>';
+    }
+    if($content == ""){
+        $content = '<section class="comment">
+        <h4>Inga kommentarer ännu</h4>
+        <p>Bli den första och kommentera</p>
+        </section>';
+    }
+    return $content;
+}
+
+function deleteComment($commentId, $userId){
+    $comment = getDatabaseData("*", "comment", "id = '$commentId'")[0];
+    $owner = getDatabaseData("user_id, id", "post", "id = '{$comment["post_id"]}' AND active = '1'")[0];
+    if($comment["user_id"] == $userId || intval(getUserLevel($userId)) > 0 || $owner["user_id"] == $userId){
+        removeDatabaseData("comment", "id = $commentId");
+        reload("post.php?postId={$owner["id"]}");
+    }
+    reload("index.php");
 }
 
 function registerMsg(){

@@ -21,48 +21,7 @@ if(!checkAccsesToPost($_SESSION["activeUserId"], $_GET["postId"])){
 <main>
 <a href="index.php">Gå tillbaka</a>
 <?php
-    $post = getDatabaseData("*", "post", "id = '{$_GET["postId"]}'", "id DESC");
-    if(isset($post[0])){
-        $post = $post[0];
-    }else{
-        reload("index.php");
-    }
-    if($_SESSION["activeUserId"] == $post["user_id"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
-        $b = "onclick=\"return confirm('Är du säker att du vill ta bort detta inlägget?')\"";
-        $x = '<a href="manager.php?action=deletePost&postId='.$post["id"].'" '.$b.'>Delete Post</a>';
-    }else{
-        $x = "";
-    }
-
-    switch($post["privacy"]){
-        case "0":
-            $privacy = "Public";
-            break;
-        case "1":
-            $privacy = "Friends";
-            break;
-        case "2":
-            $privacy = "Private";
-            break;
-    }
-
-    $content = "";
-
-    $displayname = getNameFromId($post["user_id"]);
-    $content .= '
-    <section>
-    <div class="postHead">
-    <h4>'.$displayname.'</h4> <h5>'.$privacy.'</h5>
-    </div>
-    <div class="postHead">
-    <h5>Created: '.$post["created"].'</h5>
-    '.$x.'
-    </div>
-    <p>'.$post["text"].'</p>
-    </section>
-    ';
-
-    echo $content;
+    echo getPostHtml($_GET["postId"]);
 ?>
 
 
@@ -70,11 +29,12 @@ if(!checkAccsesToPost($_SESSION["activeUserId"], $_GET["postId"])){
 <h2>Kommentera något!</h2>
 <textarea name="userText" rows="4" cols="50" required maxlength="200"></textarea>
 <input type="hidden"name="action" value="kommentera">
+<input type="hidden"name="postId" value="<?php echo $_GET["postId"] ?>">
 <input type="submit" value="Kommentera">
 </form>
+
 <div class="comments">
-
-
+    <?php echo loadAllCommentHtml($_GET["postId"]); ?>
 </div>
 
 <pre>

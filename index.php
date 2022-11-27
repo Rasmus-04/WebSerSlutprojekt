@@ -47,6 +47,7 @@ echo generateAllHtmlPost();
 <a href="manager.php?action=logout">Logga ut</a>
 <pre>
     <?php
+    $x = isFriends(1, 2);
     print_r(get_defined_vars());
     ?>
 </pre>
