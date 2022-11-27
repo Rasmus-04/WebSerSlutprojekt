@@ -1,0 +1,42 @@
+main{
+    width: 50%;
+    margin: auto;
+}
+
+textarea {
+    resize: none;
+}
+
+h4{
+    margin-bottom: 0rem;
+}
+
+p{
+    margin-bottom: 0;
+}
+
+.postHead{
+    column-count:2; 
+    column-gap: 20px;
+}
+
+section{
+    background-color: rgb(231, 231, 231);
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 2rem;
+}
+
+.comments{
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(231, 231, 231);
+}
+
+h5{margin-bottom: 0.3rem;}
+
+@media (max-width: 931px) {
+    main{
+        width: 80%;
+    }
+}
