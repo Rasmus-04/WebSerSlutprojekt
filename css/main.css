@@ -40,9 +40,15 @@ section{
     margin: 2rem auto;
 }
 
-h5{margin-bottom: 0.3rem;}
+h5{
+    margin-bottom: 0.3rem;
+}
 
-@media (max-width: 931px) {
+h2{
+    margin-top: 0.83em;
+}
+
+@media (max-width: 1029px) {
     main{
         width: 80%;
     }
