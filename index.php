@@ -1,6 +1,7 @@
 <?php
 include("functions.php");
 validateAccses();
+include("template.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,6 +16,9 @@ validateAccses();
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
+<header>
+<?php #echo $heredoc; ?>
+</header>
 <main>
 <form action="manager.php" method="POST">
 <h2>Skriv något!</h2>
@@ -47,11 +51,12 @@ echo generateAllHtmlPost();
 <a href="manager.php?action=logout">Logga ut</a>
 <pre>
     <?php
-    $x = isFriends(1, 2);
     print_r(get_defined_vars());
     ?>
 </pre>
 </main>
+
+
 </body>
 </html>
 

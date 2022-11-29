@@ -99,7 +99,7 @@ function prepPassword($password){
 }
 
 function createUser($username, $pasw, $displayname, $email){
-    $username = mb_strtolower($username);
+    $username = trim(mb_strtolower($username));
     if (validateUserName($username) == false){
         reload("registrera.php", "invalidUsername");
     }else if(validatePassword($pasw) == false){
@@ -120,6 +120,7 @@ function createUser($username, $pasw, $displayname, $email){
 }
 
 function validateLogin($user, $pasw){
+    $user = trim($user);
     $data = getDatabaseData("username, pasword", "user", "username = '$user'")[0];
     if($user == $data["username"] && prepPassword($pasw) == $data["pasword"]){
         return true;
