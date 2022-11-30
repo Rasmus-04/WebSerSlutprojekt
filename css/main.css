@@ -13,6 +13,7 @@ h4{
 
 p{
     margin-bottom: 0;
+    word-wrap: break-word;
 }
 
 .postHead{
