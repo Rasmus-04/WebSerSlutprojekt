@@ -1,9 +1,9 @@
 <?php
 # Variabler
-$host = "localhost";      // Den server där databasen ligger
-$user = "root";           // Ditt användarnamn
-$pwd  = "root";           // Ditt lösenord
-$db   = "slutprojekt";           // Databasen vi vill jobba mot
+$host = "alstrom.hemsida.eu";      // Den server där databasen ligger
+$user = "alstromh_040124rs";           // Ditt användarnamn
+$pwd  = "aFbRvY&OO&f*";           // Ditt lösenord
+$db   = "alstromh_040124rs";           // Databasen vi vill jobba mot
 
 # dsn - data source name
 $dsn = "mysql:host=$host;dbname=$db";

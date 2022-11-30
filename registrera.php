@@ -26,13 +26,14 @@ include("functions.php");
             <br>
             <input type="text" placeholder="Email" name="email" maxlength="40" minlength="3" required>
             <br>
-            <input type="password" placeholder="Lösenord" name="password" maxlength="120" minlength="5" required>
+            <input type="password" placeholder="Lösenord" name="password" maxlength="120" minlength="5" id="password" required>
             <br>
-            <input type="password" placeholder="Upprepa lösenord" name="repetedpassword" required>
+            <input type="password" placeholder="Upprepa lösenord" name="repetedpassword" id="confirm_password" required>
             <input type="submit" name="action" value="regrestrera">
             <br>
             <a href="login.php">Har du redan ett konto? Logga in!</a>
 </form>
 </main>
+<script src="js/main.js"></script>
 </body>
 </html>

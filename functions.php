@@ -83,11 +83,11 @@ function validatePassword($pasw){
 }
 
 function userExist($username){
-    return getDatabaseData("username", "user", "username = '$username'");
+    return getDatabaseData("username", "slutprojekt_user", "username = '$username'");
 }
 
 function emailExist($email){
-    return getDatabaseData("email", "user", "email = '$email'");
+    return getDatabaseData("email", "slutprojekt_user", "email = '$email'");
 }
 
 function prepPassword($password){
@@ -114,14 +114,14 @@ function createUser($username, $pasw, $displayname, $email){
         reload("registrera.php", "emailTaken");
     }else{
     $pasw = prepPassword($pasw);
-    sendDatabaseData("user", "username, pasword, displayName, email", "'$username', '$pasw', '$displayname', '$email'");
+    sendDatabaseData("slutprojekt_user", "username, pasword, displayName, email", "'$username', '$pasw', '$displayname', '$email'");
     reload("registrera.php", "accountCreated");
     }
 }
 
 function validateLogin($user, $pasw){
     $user = trim($user);
-    $data = getDatabaseData("username, pasword", "user", "username = '$user'")[0];
+    $data = getDatabaseData("username, pasword", "slutprojekt_user", "username = '$user'")[0];
     if($user == $data["username"] && prepPassword($pasw) == $data["pasword"]){
         return true;
     }
@@ -138,7 +138,7 @@ function login($user, $pasw){
         $_SESSION["activeUser"] = $user;
         $_SESSION["activeUserId"] = getUserId($_SESSION["activeUser"]);
         $lastSeen = currentDateTime();
-        updateDatabaseData("user", "lastSeen = '$lastSeen'", "username = '{$_SESSION["activeUser"]}'");
+        updateDatabaseData("slutprojekt_user", "lastSeen = '$lastSeen'", "username = '{$_SESSION["activeUser"]}'");
         reload("index.php");
     }else{
         reload("login.php", "wrongCredentials");
@@ -162,7 +162,7 @@ function logout(){
 }
 
 function getUserId($user){
-    return getDatabaseData("id", "user", "username = '$user'")[0]["id"];
+    return getDatabaseData("id", "slutprojekt_user", "username = '$user'")[0]["id"];
 }
 
 function makePost($text, $userId, $privacy){
@@ -182,17 +182,17 @@ function makePost($text, $userId, $privacy){
             break;
     }
 
-    sendDatabaseData("post", "text, user_id, privacy", "'$text', '$userId', '$x'");
+    sendDatabaseData("slutprojekt_post", "text, user_id, privacy", "'$text', '$userId', '$x'");
     reload("index.php", "postCreated");
 }
 
 function getDisplayNameFromId($userId){
-    return ucfirst(getDatabaseData("displayName", "user", "id = '$userId'")[0]["displayName"]);
+    return ucfirst(getDatabaseData("displayName", "slutprojekt_user", "id = '$userId'")[0]["displayName"]);
 }
 
 function isFriends($user1, $user2){
-    $a = isset(getDatabaseData("*", "friends", "friendId = '$user1' AND user_id = '$user2'")[0]);
-    $b = isset(getDatabaseData("*", "friends", "friendId = '$user2' AND user_id = '$user1'")[0]);
+    $a = isset(getDatabaseData("*", "slutprojekt_friends", "friendId = '$user1' AND user_id = '$user2'")[0]);
+    $b = isset(getDatabaseData("*", "slutprojekt_friends", "friendId = '$user2' AND user_id = '$user1'")[0]);
     if($a && $b){
         return true;
     }else{
@@ -201,7 +201,7 @@ function isFriends($user1, $user2){
 }
 
 function generateAllHtmlPost(){
-    $allPosts = getDatabaseData("*", "post", "active = '1'", "id DESC");
+    $allPosts = getDatabaseData("*", "slutprojekt_post", "active = '1'", "id DESC");
     $content = "";    
 
     foreach($allPosts as $post){
@@ -230,7 +230,7 @@ function generateAllHtmlPost(){
 }
 
 function getPostHtml($postId, $linkToPost=false){
-    $post = getDatabaseData("*", "post", "id = '$postId' AND active = '1'", "id DESC");
+    $post = getDatabaseData("*", "slutprojekt_post", "id = '$postId' AND active = '1'", "id DESC");
     if(isset($post[0])){
         $post = $post[0];
     }else{
@@ -282,20 +282,20 @@ function getPostHtml($postId, $linkToPost=false){
 }
 
 function getUserLevel($userId){
-    return getDatabaseData("level", "user", "id = '$userId'")[0]["level"];
+    return getDatabaseData("level", "slutprojekt_user", "id = '$userId'")[0]["level"];
 }
 
 function deletePost($postId){
-    $postOwnerId = getDatabaseData("user_id", "post", "id = '$postId' AND active = '1'")[0]["user_id"];
+    $postOwnerId = getDatabaseData("user_id", "slutprojekt_post", "id = '$postId' AND active = '1'")[0]["user_id"];
 
     if($postOwnerId == $_SESSION["activeUserId"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
-        updateDatabaseData("post", "active = 0", "id='$postId'");
+        updateDatabaseData("slutprojekt_post", "active = 0", "id='$postId'");
     }
     reload("index.php");
 }
 
 function checkAccsesToPost($userId, $postId){
-    $x = getDatabaseData("user_id, privacy", "post", "id='$postId' AND active = '1'")[0];
+    $x = getDatabaseData("user_id, privacy", "slutprojekt_post", "id='$postId' AND active = '1'")[0];
     switch($x["privacy"]){
         case "0":
             return true;
@@ -319,20 +319,20 @@ function checkAccsesToPost($userId, $postId){
 }
 
 function makeComment($comment, $postId, $commmentUserId){
-    if(!isset(getDatabaseData("id", "post", "id='$postId' AND active = '1'")[0])){
+    if(!isset(getDatabaseData("id", "slutprojekt_post", "id='$postId' AND active = '1'")[0])){
         reload("index.php");
     }
     if(!checkAccsesToPost($commmentUserId, $postId)){
         reload("index.php?mess=jajaj");
     }
 
-    sendDatabaseData("comment", "text, user_id, post_id", "'$comment', '$commmentUserId', '$postId'");
+    sendDatabaseData("slutprojekt_comment", "text, user_id, post_id", "'$comment', '$commmentUserId', '$postId'");
     reload("post.php?postId=".$postId);
 }
 
 function loadAllCommentHtml($postId){
-    $comments = getDatabaseData("*", "comment", "post_id = '$postId'", "id DESC");
-    $owner = getDatabaseData("user_id", "post", "id = '$postId' AND active = '1'")[0];
+    $comments = getDatabaseData("*", "slutprojekt_comment", "post_id = '$postId'", "id DESC");
+    $owner = getDatabaseData("user_id", "slutprojekt_post", "id = '$postId' AND active = '1'")[0];
 
     $content = "";
     foreach($comments as $comment){
@@ -361,10 +361,10 @@ function loadAllCommentHtml($postId){
 }
 
 function deleteComment($commentId, $userId){
-    $comment = getDatabaseData("*", "comment", "id = '$commentId'")[0];
-    $owner = getDatabaseData("user_id, id", "post", "id = '{$comment["post_id"]}' AND active = '1'")[0];
+    $comment = getDatabaseData("*", "slutprojekt_comment", "id = '$commentId'")[0];
+    $owner = getDatabaseData("user_id, id", "slutprojekt_post", "id = '{$comment["post_id"]}' AND active = '1'")[0];
     if($comment["user_id"] == $userId || intval(getUserLevel($userId)) > 0 || $owner["user_id"] == $userId){
-        removeDatabaseData("comment", "id = $commentId");
+        removeDatabaseData("slutprojekt_comment", "id = $commentId");
         reload("post.php?postId={$owner["id"]}");
     }
     reload("index.php");
