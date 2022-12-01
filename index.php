@@ -25,19 +25,6 @@ include("template.php");
 </select>
 <input type="submit" value="Sicka">
 </form>
-
-<section>
-    <div class="postHead">
-    <h4>Dinmamma</h4> <h5>Public</h5>
-    </div>
-    <p>@test</p>
-    <div class="postHead">
-    <h5>Created: 2022-12-01 13:50:22</h5>
-    
-    </div>
-    <p>dsadasda</p>
-    <a href="post.php?postId=53">Gå till inlägget</a>
-    </section>
 <?php
 echo generateAllHtmlPost();
 ?>

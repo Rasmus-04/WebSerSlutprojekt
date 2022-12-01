@@ -49,8 +49,7 @@ echo generateUserPageHtml($_GET["userid"]);
         <h4>Test</h4><a href="manager.php?action=deleteComment&commentId=9" onclick="return confirm('Är du säker att du vill ta bort denna kommentar?')">Delete comment</a>
         </div>
         <div class="postHead"><h5>Created: 2022-12-01 10:49:19</h5></div>
-        <p>njfew
-</p>
+        <p>njfew</p>
 <a href="post.php?postId=2">Gå till kommentaren</a>
     </section>
 </article>
