@@ -3,7 +3,7 @@ main{
     margin: auto;
 }
 
-textarea {
+textarea{
     resize: none;
 }
 
@@ -54,3 +54,9 @@ h2{
         width: 80%;
     }
 }
+
+.wrapper {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+  }

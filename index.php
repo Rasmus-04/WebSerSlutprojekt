@@ -21,7 +21,7 @@ include("template.php");
 <select name="privicy" id="privicy">
   <option value="public">Public</option>
   <option value="friends">Friends</option>
-  <option value="private">private</option>
+  <option value="private">Private</option>
 </select>
 <input type="submit" value="Sicka">
 </form>

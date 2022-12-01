@@ -59,7 +59,7 @@ body{
     min-height: 100vh;
     z-index: 98;
     background: rgb(2,0,36);
-    background: linear-gradient(180deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 100%);
+    background: linear-gradient(180deg, rgb(255, 255, 255) 0%, rgb(215, 215, 255) 100%);
     padding-top: 120px;
     transition: 0.4s;
 }
@@ -75,7 +75,7 @@ body{
     margin: 0 auto 16px;
     text-align: center;
     padding: 12px 16px;
-    background-color: rgb(41, 76, 122);
+    background-color: rgb(205, 135, 231);
     color: white;
     text-decoration: none;
 }

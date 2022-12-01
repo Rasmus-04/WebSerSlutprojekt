@@ -30,9 +30,9 @@ $navbar = <<<EOD
     </nav>
 
         <nav class="mobile-nav">
-            <a href="#">Hem</a>
+            <a href="index.php">Hem</a>
             <a href="#">Vänner</a>
-            <a href="#">Profil</a>
+            <a href="userpage.php?userid={$_SESSION["activeUserId"]}">Profil</a>
             <a href="manager.php?action=logout">Logga ut</a>
         </nav>
         <div id="navFiller"></div>
