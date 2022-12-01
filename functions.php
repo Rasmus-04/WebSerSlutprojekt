@@ -102,15 +102,15 @@ function createUser($username, $pasw, $displayname, $email){
     $username = trim(mb_strtolower($username));
     if (validateUserName($username) == false){
         reload("registrera.php", "invalidUsername");
-    }else if(validatePassword($pasw) == false){
+    }elseif(validatePassword($pasw) == false){
         reload("registrera.php", "invalidPasw");
-    }else if(isset(userExist($username)[0])){
+    }elseif(isset(userExist($username)[0])){
         reload("registrera.php", "userTaken");
-    }else if(validateUserName($displayname) == false){
+    }elseif(validateUserName($displayname) == false){
         reload("registrera.php", "invalidDisplayname");
-    }else if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+    }elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)){
         reload("registrera.php", "invalidEmail");
-    }else if(isset(emailExist($email)[0])){
+    }elseif(isset(emailExist($email)[0])){
         reload("registrera.php", "emailTaken");
     }else{
     $pasw = prepPassword($pasw);
@@ -169,7 +169,6 @@ function makePost($text, $userId, $privacy){
     if(containsIllegalChars($text, false)){
         reload("index.php", "illigalChars");
     }
-
     switch($privacy){
         case "public":
             $x = 0;
@@ -190,9 +189,13 @@ function getDisplayNameFromId($userId){
     return ucfirst(getDatabaseData("displayName", "slutprojekt_user", "id = '$userId'")[0]["displayName"]);
 }
 
+function getusernameFromId($userId){
+    return ucfirst(getDatabaseData("username", "slutprojekt_user", "id = '$userId'")[0]["username"]);
+}
+
 function isFriends($user1, $user2){
-    $a = isset(getDatabaseData("*", "slutprojekt_friends", "friendId = '$user1' AND user_id = '$user2'")[0]);
-    $b = isset(getDatabaseData("*", "slutprojekt_friends", "friendId = '$user2' AND user_id = '$user1'")[0]);
+    $a = isset(getDatabaseData("*", "slutprojekt_friends", "reciverId = '$user1' AND user_id = '$user2'")[0]);
+    $b = isset(getDatabaseData("*", "slutprojekt_friends", "reciverId = '$user2' AND user_id = '$user1'")[0]);
     if($a && $b){
         return true;
     }else{
@@ -221,7 +224,7 @@ function generateAllHtmlPost(){
             if(!isFriends($_SESSION["activeUserId"], $post["user_id"])){
                 continue;
             }
-        }else if($privacy == "Private" && $post["user_id"] != $_SESSION["activeUserId"] && getUserLevel($_SESSION["activeUserId"]) != "2"){
+        }elseif($privacy == "Private" && $post["user_id"] != $_SESSION["activeUserId"] && getUserLevel($_SESSION["activeUserId"]) != "2"){
             continue;
         }
         $content .= getPostHtml($post["id"], true);
@@ -264,11 +267,13 @@ function getPostHtml($postId, $linkToPost=false){
     $content = "";
 
     $displayname = getDisplayNameFromId($post["user_id"]);
+    $userName = getUsernameFromId($post["user_id"]);
     $content .= '
     <section>
     <div class="postHead">
     <h4>'.$displayname.'</h4> <h5>'.$privacy.'</h5>
     </div>
+    <p>@'.$userName.'</p>
     <div class="postHead">
     <h5>Created: '.$post["created"].'</h5>
     '.$x.'
@@ -406,6 +411,84 @@ function loginError(){
                 break;
         }
     }
+}
+
+function friendRequestRecived($reciver, $sender){
+    return isset(getDatabaseData("id", "slutprojekt_friends", "reciverId='$reciver' AND user_id='$sender'")[0]["id"]);
+}
+
+function friendRequestSent($sender, $reciver){
+    return isset(getDatabaseData("id", "slutprojekt_friends", "reciverId='$reciver' AND user_id='$sender'")[0]["id"]);
+}
+
+function sendFriendRequest($sender, $reciver){
+    sendDatabaseData("slutprojekt_friends", "reciverId, user_id", "'$reciver', '$sender'");
+}
+
+function cancelFriendRequest($sender, $reciver){
+    removeDatabaseData("slutprojekt_friends", "reciverId = '$reciver' AND user_id = '$sender'");
+}
+
+function denyFriendRequest($sender, $reciver){
+    removeDatabaseData("slutprojekt_friends", "reciverId = '$sender' AND user_id = '$reciver'");
+}
+
+function removeFriendRequest($sender, $reciver){
+    removeDatabaseData("slutprojekt_friends", "reciverId = '$reciver' AND user_id = '$sender'");
+    removeDatabaseData("slutprojekt_friends", "reciverId = '$sender' AND user_id = '$reciver'");
+}
+
+function generateFriendsSiteHtml($userId){
+    $users = getDatabaseData("username, id", "slutprojekt_user", "active = 1");
+    $allUsersContent = "";
+    $myFriendsContent = "";
+    $friendRequestContent = "";
+
+    foreach($users as $user){
+        if($userId == $user["id"]){
+            continue;
+        }elseif(isFriends($userId, $user["id"])){
+            $myFriendsContent .= "<p>".$user["username"]."</p><a href='manager.php?action=removeFriendRequest&senderId=".$userId."&reciverId=".$user["id"]."&relodTo=friends.php'>Ta bort</a> <a href='userpage.php?userid=".$user["id"]."'>Profil</a><hr><hr><hr>";
+        }elseif(friendRequestRecived($userId, $user["id"])){
+            $friendRequestContent .= "<p>".$user["username"]."</p><a href='manager.php?action=sendFriendRequest&senderId=".$userId."&reciverId=".$user["id"]."&relodTo=friends.php'>Acceptera</a> <a href='manager.php?action=denyFriendRequest&senderId=".$userId."&reciverId=".$user["id"]."&relodTo=friends.php'>Neka</a><hr><hr><hr>";
+            $allUsersContent .= "<p>".$user["username"]."</p><a href='manager.php?action=sendFriendRequest&senderId=".$userId."&reciverId=".$user["id"]."&relodTo=friends.php'>Acceptera</a> <a href='userpage.php?userid=".$user["id"]."'>Profil</a><hr><hr><hr>";
+        }elseif(friendRequestSent($userId, $user["id"])){
+            $allUsersContent .= "<p>".$user["username"]."</p><a href='manager.php?action=cancelFriendRequest&senderId=".$userId."&reciverId=".$user["id"]."&relodTo=friends.php'>Avbryt förfrågan</a> <a href='userpage.php?userid=".$user["id"]."'>Profil</a><hr><hr><hr>";
+            $friendRequestContent .= "<p>".$user["username"]."</p><a href='manager.php?action=cancelFriendRequest&senderId=".$userId."&reciverId=".$user["id"]."&relodTo=friends.php'>Avbryt förfrågan</a> <a href='userpage.php?userid=".$user["id"]."'>Profil</a><hr><hr><hr>";
+        }else{
+            $allUsersContent .= "<p>".$user["username"]."</p><a href='manager.php?action=sendFriendRequest&senderId=".$userId."&reciverId=".$user["id"]."&relodTo=friends.php'>Add friend</a> <a href='userpage.php?userid=".$user["id"]."'>Profil</a><hr><hr><hr>";
+        }
+    }
+
+    $content = array($allUsersContent, $myFriendsContent, $friendRequestContent);
+    return $content;
+}
+
+function generateUserPageHtml($pageId){
+    $user = getDatabaseData("*", "slutprojekt_user", "id='$pageId'");
+
+    if(!isset($user[0])){
+        reload("index.php");
+    }
+    $user = $user[0];
+    $content = "";
+
+    if($_SESSION["activeUserId"] == $pageId){
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">inställningar</h2>';
+    }elseif(isFriends($pageId, $_SESSION["activeUserId"])){
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Ta bort vän</h2>';
+    }elseif(friendRequestRecived($_SESSION["activeUserId"], $pageId)){
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Acceptera</h2>';
+    }elseif(friendRequestSent($_SESSION["activeUserId"], $pageId)){
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Avbryt förfrågan</h2>';
+    }else{
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Lägg till vän</h2>';
+    }
+
+    $content .= '<h5>@'.getusernameFromId($pageId).'</h5> <h5 style="text-align: right;">Senast aktiv: '.$user["lastSeen"].'</h5>';
+
+    return $content;
+
 }
 
 ?>

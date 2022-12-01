@@ -14,21 +14,19 @@ include("template.php");
 
 <main>
 <div class="wrapper">
-<h2 style="text-align: left; margin-bottom: 0;">Admin</h2> <h2 style="text-align: right; margin-bottom: 0;">Add friend</h2>
-<h5>@admin</h5> <h5 style="text-align: right;">Senast aktiv: Nu</h5>
+<?php
+echo generateUserPageHtml($_GET["userid"]);
+?>
 </div>
-
-
 
 <article>
     <h3>Alla posts och kommentarer</h3>
-<section>
+    <section>
     <div class="postHead">
     <h4>Admin</h4> <h5>Public</h5>
     </div>
     <div class="postHead">
     <h5>Created: 2022-11-29 10:28:33</h5>
-    
     </div>
     <p>hej</p>
     <a href="post.php?postId=7">Gå till inlägget</a>
@@ -56,8 +54,6 @@ include("template.php");
 <a href="post.php?postId=2">Gå till kommentaren</a>
     </section>
 </article>
-
-
 </main>
 </body>
 </html>

@@ -31,6 +31,34 @@ if(isset($_GET["action"])){
         case "deleteComment":
             deleteComment($_GET["commentId"], $_SESSION["activeUserId"]);
             break;
+        case "sendFriendRequest":
+            sendFriendRequest($_SESSION["activeUserId"], $_GET["reciverId"]);
+            if(isset($_GET["relodTo"])){
+                reload($_GET["relodTo"]);
+            }
+            reload("index.php");
+            break;
+        case "cancelFriendRequest":
+            cancelFriendRequest($_SESSION["activeUserId"], $_GET["reciverId"]);
+            if(isset($_GET["relodTo"])){
+                reload($_GET["relodTo"]);
+            }
+            reload("index.php");
+            break;
+        case "removeFriendRequest":
+            removeFriendRequest($_SESSION["activeUserId"], $_GET["reciverId"]);
+            if(isset($_GET["relodTo"])){
+                reload($_GET["relodTo"]);
+            }
+            reload("index.php");
+            break;
+        case "denyFriendRequest":
+            denyFriendRequest($_SESSION["activeUserId"], $_GET["reciverId"]);
+            if(isset($_GET["relodTo"])){
+                reload($_GET["relodTo"]);
+            }
+            reload("index.php");
+            break;
     }
 }
 ?>

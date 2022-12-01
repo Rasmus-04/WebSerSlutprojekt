@@ -20,7 +20,7 @@ $navbar = <<<EOD
     <nav class="main-nav">
         <ul>
             <li><a href="index.php">Hem</a><div class="line"></div></div></li>
-            <li><a href="#">Vänner</a><div class="line"></div></div></li>
+            <li><a href="friends.php">Vänner</a><div class="line"></div></div></li>
             <li><a href="userpage.php?userid={$_SESSION["activeUserId"]}">Profil</a><div class="line"></div></li>
             <li><a href="manager.php?action=logout">Logga ut</a><div class="line"></div></li>
         </ul>
@@ -31,7 +31,7 @@ $navbar = <<<EOD
 
         <nav class="mobile-nav">
             <a href="index.php">Hem</a>
-            <a href="#">Vänner</a>
+            <a href="friends.php">Vänner</a>
             <a href="userpage.php?userid={$_SESSION["activeUserId"]}">Profil</a>
             <a href="manager.php?action=logout">Logga ut</a>
         </nav>

@@ -60,3 +60,74 @@ h2{
     width: 100%;
     grid-template-columns: repeat(2, 1fr);
   }
+
+.wrapperFriends{
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 1029px) {
+    .wrapperFriends{
+        grid-template-columns: repeat(2, 1fr);
+      }
+}
+
+@media (max-width: 767px) {
+    .wrapperFriends{
+        grid-template-columns: repeat(1, 1fr);
+      }
+
+      .item div{
+        width:100%; 
+    }
+}
+
+#friendsPage{
+    width: 70%;
+}
+
+.item h2{
+    text-align:center;
+}
+
+.item div{
+    width:80%; 
+    height:50vh; 
+    background: rgb(235, 235, 235); 
+    margin: 0 auto;
+    padding-right: 1rem;
+}
+
+.item div p{
+    color: black;
+    font-size: 2.5rem;
+    margin-left: 1rem;
+    font-weight: 300;
+}
+
+.friendBlockWrapper{
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: min-content;
+    column-gap: 0.7rem;
+    overflow: scroll;
+}
+
+.friendBlockWrapper hr{
+    margin: 0;
+}
+
+.left{
+    text-align: left;
+}
+
+.right{
+    text-align: right;
+    margin-left: 1.5rem;
+}
+
+.wrapper h2{
+    margin-bottom: 0
+}
