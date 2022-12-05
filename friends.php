@@ -35,6 +35,12 @@ $content = generateFriendsSiteHtml($_SESSION["activeUserId"]);
     </div>
 </div>
 
+<h2 style="text-align:center;">Alla Post från vänner</h2>
+<article>
+<?php
+echo loadAllFriendsPosts();
+?>
+</article>
 
 </main>
 </body>

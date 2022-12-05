@@ -1,5 +1,8 @@
 <?php
 include("functions.php");
+if(isset($_SESSION["activeUser"])){
+    reload("index.php");
+}
 if(isset($_COOKIE["activeUser"]) && isset($_COOKIE["valitadecode"])){
     if($_COOKIE["valitadecode"] == prepPassword($_COOKIE["activeUser"])){
         $_SESSION["activeUser"] = $_COOKIE["activeUser"];
@@ -7,13 +10,9 @@ if(isset($_COOKIE["activeUser"]) && isset($_COOKIE["valitadecode"])){
         $lastSeen = currentDateTime();
         updateDatabaseData("user", "lastSeen = '$lastSeen'", "username = '{$_SESSION["activeUser"]}'");
         reload("index.php");
-}else if(isset($_SESSION["activeUser"])){
-    reload("index.php");
+    }
 }
-}
-
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +43,12 @@ if(isset($_COOKIE["activeUser"]) && isset($_COOKIE["valitadecode"])){
 <a href="registrera.php">Inget konto? Skapa ett!</a>
 <br>
 <a href="csource.php">CSource</a>
+
+<pre>
+    <?php
+    print_r(get_defined_vars());
+    ?>
+</pre>
 </main>
 </body>
 </html>

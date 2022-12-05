@@ -52,9 +52,9 @@ function removeDatabaseData($from, $where){
 
 function containsIllegalChars($input, $x=true){
     if($x){
-        $illegalChars = array("'",'"', "<", "/", "*", "\\", "|", ">", " ", ",", ".", "=");
+        $illegalChars = array("'",'"', "<", "/", "*", "\\", "|", ">", " ", ",", ".", "=", "-");
     }else{
-        $illegalChars = array("'",'"', "<", "/", "*", "\\", "|", ">");
+        $illegalChars = array("'",'"', "<", "*", "\\", "|", ">", "-");
     }
     foreach ($illegalChars as $key) {
         if(str_contains($input, $key)){
@@ -488,7 +488,19 @@ function generateUserPageHtml($pageId){
     $content .= '<h5>@'.getusernameFromId($pageId).'</h5> <h5 style="text-align: right;">Senast aktiv: '.$user["lastSeen"].'</h5>';
 
     return $content;
-
 }
 
+function loadAllFriendsPosts(){
+    $allPosts = getDatabaseData("*", "slutprojekt_post", "active = '1'", "id DESC");
+    $content = "";   
+
+    foreach($allPosts as $post){
+        if(!isFriends($_SESSION["activeUserId"], $post["user_id"])){
+                continue;
+            }
+        $content .= getPostHtml($post["id"], true);
+    }
+    return $content;
+
+}
 ?>
