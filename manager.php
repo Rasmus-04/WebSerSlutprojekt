@@ -26,10 +26,18 @@ if(isset($_GET["action"])){
             logout();
             break;
         case "deletePost":
-            deletePost($_GET["postId"]);
+            if(isset($_GET["reloadLink"])){
+                deletePost($_GET["postId"], $_GET["reloadLink"]);
+            }else{
+                deletePost($_GET["postId"]);
+            }
             break;
         case "deleteComment":
-            deleteComment($_GET["commentId"], $_SESSION["activeUserId"]);
+            if(isset($_GET["reloadLink"])){
+                deleteComment($_GET["commentId"], $_SESSION["activeUserId"], $_GET["reloadLink"]);
+            }else{
+                deleteComment($_GET["commentId"], $_SESSION["activeUserId"]);
+            }
             break;
         case "sendFriendRequest":
             sendFriendRequest($_SESSION["activeUserId"], $_GET["reciverId"]);
@@ -62,3 +70,9 @@ if(isset($_GET["action"])){
     }
 }
 ?>
+
+<pre>
+    <?php
+    #print_r(get_defined_vars());
+    ?>
+</pre>

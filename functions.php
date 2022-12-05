@@ -232,16 +232,21 @@ function generateAllHtmlPost(){
     return $content;
 }
 
-function getPostHtml($postId, $linkToPost=false){
+function getPostHtml($postId, $linkToPost=false, $reloadLink=""){
     $post = getDatabaseData("*", "slutprojekt_post", "id = '$postId' AND active = '1'", "id DESC");
     if(isset($post[0])){
         $post = $post[0];
     }else{
         reload("index.php");
     }
+
+    if($reloadLink != ""){
+        $reloadLink = "&reloadLink=".$reloadLink."";
+    }
+
     if($_SESSION["activeUserId"] == $post["user_id"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
         $b = "onclick=\"return confirm('Är du säker att du vill ta bort detta inlägget?')\"";
-        $x = '<a href="manager.php?action=deletePost&postId='.$post["id"].'" '.$b.'>Delete Post</a>';
+        $x = '<a href="manager.php?action=deletePost&postId='.$post["id"].''.$reloadLink.'" '.$b.'>Delete Post</a>';
     }else{
         $x = "";
     }
@@ -290,13 +295,13 @@ function getUserLevel($userId){
     return getDatabaseData("level", "slutprojekt_user", "id = '$userId'")[0]["level"];
 }
 
-function deletePost($postId){
+function deletePost($postId, $reloadLink="index.php"){
     $postOwnerId = getDatabaseData("user_id", "slutprojekt_post", "id = '$postId' AND active = '1'")[0]["user_id"];
 
     if($postOwnerId == $_SESSION["activeUserId"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
         updateDatabaseData("slutprojekt_post", "active = 0", "id='$postId'");
     }
-    reload("index.php");
+    reload($reloadLink);
 }
 
 function checkAccsesToPost($userId, $postId){
@@ -348,10 +353,11 @@ function loadAllCommentHtml($postId){
         }
 
         $content.= 
-        '<section class="comment">
+        '<section class="comment" id="'.$comment["id"].'">
         <div class="postHead">
         <h4>'.getDisplayNameFromId($comment["user_id"]).'</h4>'.$x.'
         </div>
+        <p>@'.getusernameFromId($comment["user_id"]).'</p>
         <div class="postHead"><h5>Created: '.$comment["created"].'</h5></div>
         <p>'.$comment["text"].'</p>
     </section>';
@@ -365,14 +371,18 @@ function loadAllCommentHtml($postId){
     return $content;
 }
 
-function deleteComment($commentId, $userId){
+function deleteComment($commentId, $userId, $reloadLink="index.php"){
     $comment = getDatabaseData("*", "slutprojekt_comment", "id = '$commentId'")[0];
     $owner = getDatabaseData("user_id, id", "slutprojekt_post", "id = '{$comment["post_id"]}' AND active = '1'")[0];
     if($comment["user_id"] == $userId || intval(getUserLevel($userId)) > 0 || $owner["user_id"] == $userId){
         removeDatabaseData("slutprojekt_comment", "id = $commentId");
-        reload("post.php?postId={$owner["id"]}");
+        if($reloadLink != "index.php"){
+            reload($reloadLink);
+        }else{
+            reload("post.php?postId={$owner["id"]}");
+        }
     }
-    reload("index.php");
+    reload($reloadLink);
 }
 
 function registerMsg(){
@@ -502,5 +512,66 @@ function loadAllFriendsPosts(){
     }
     return $content;
 
+}
+
+function specialRequest($userId){
+    global $pdo;
+    $sql = "SELECT id, text, created, privacy, 'post' AS Type FROM slutprojekt_post WHERE user_id = $userId AND active = 1 UNION SELECT id, text, created, post_id, 'comment' AS Type FROM slutprojekt_comment WHERE user_id = $userId ORDER BY created DESC;";
+    $stm = $pdo->prepare($sql);
+    $stm->execute();
+    return $stm->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+function getCommentHtml($comment, $userId){
+    $postId = $comment["privacy"];
+    $x = "";
+    $postData = getDatabaseData("privacy, user_id", "slutprojekt_post", "id = $postId")[0];
+    $content = "";
+
+    if($postData["privacy"] == 0 or $postData["user_id"] == $_SESSION["activeUserId"] or getUserLevel($_SESSION["activeUserId"]) > 1){
+       
+    }elseif($postData["privacy"] == 1 AND (isFriends($postData["user_id"], $_SESSION["activeUserId"]) or getUserLevel($_SESSION["activeUserId"]) > 0)){
+        
+    }else{
+        return;
+    }
+
+    if($postData["user_id"] == $_SESSION["activeUserId"] or getUserLevel($_SESSION["activeUserId"]) > 0 or $userId == $_SESSION["activeUserId"]){
+        $x = '<a href="manager.php?action=deleteComment&commentId='.$comment["id"].'&reloadLink=userpage.php?userid='.$userId.'" onclick="return confirm(\'Är du säker att du vill ta bort denna kommentar?\')">Delete comment</a>';
+    }
+
+    $content.= 
+    '<section>
+    <div class="postHead">
+    <h4>'.getDisplayNameFromId($userId).'</h4>'.$x.'
+    </div>
+    <p>@'.getusernameFromId($userId).'</p>
+    <div class="postHead"><h5>Created: '.$comment["created"].'</h5></div>
+    <p>'.$comment["text"].'</p>
+    <a href="post.php?postId='.$postId.'#'.$comment["id"].'">Gå till kommentaren</a>
+    </section>';
+
+
+    return $content;
+
+}
+
+function loadAllUserPagePostsAndComments($userId){
+    $allPostAndComments = specialRequest($userId);
+    $content = "";
+    foreach($allPostAndComments as $post){
+        if($post["Type"] == "post"){
+            if($userId == $_SESSION["activeUserId"] or getUserLevel($_SESSION["activeUserId"]) > 1 or $post["privacy"] == 0){
+                $content .= getPostHtml($post["id"], true, "userpage.php?userid=".$userId."");
+            }elseif($post["privacy"] == 1 and (isFriends($userId, $_SESSION["activeUserId"]) or getUserLevel($_SESSION["activeUserId"]) > 0)){
+                $content .= getPostHtml($post["id"], true, "userpage.php?userid=".$userId."");
+            }
+        }elseif($post["Type"] == "comment"){
+            $content .= getCommentHtml($post, $userId);
+        }
+        
+    }
+    return $content;
 }
 ?>

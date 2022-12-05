@@ -21,6 +21,13 @@ echo generateUserPageHtml($_GET["userid"]);
 
 <article>
     <h3>Alla posts och kommentarer</h3>
+
+
+    <?php
+    echo loadAllUserPagePostsAndComments($_GET["userid"])
+    ?>
+
+    <!--
     <section>
     <div class="postHead">
     <h4>Admin</h4> <h5>Public</h5>
@@ -52,6 +59,7 @@ echo generateUserPageHtml($_GET["userid"]);
         <p>njfew</p>
 <a href="post.php?postId=2">Gå till kommentaren</a>
     </section>
+-->
 </article>
 </main>
 </body>

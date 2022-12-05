@@ -43,12 +43,6 @@ if(isset($_COOKIE["activeUser"]) && isset($_COOKIE["valitadecode"])){
 <a href="registrera.php">Inget konto? Skapa ett!</a>
 <br>
 <a href="csource.php">CSource</a>
-
-<pre>
-    <?php
-    print_r(get_defined_vars());
-    ?>
-</pre>
 </main>
 </body>
 </html>
