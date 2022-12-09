@@ -29,16 +29,16 @@ if(isset($_COOKIE["activeUser"]) && isset($_COOKIE["valitadecode"])){
 
 <main>
 <form action="manager.php" method="post" id="logIn">
-            <h2>Logga in</h2>
-            <?php loginError() ?>
-            <input type="text" placeholder="Användarnamn" name="user" required>
-            <br>
-            <input type="password" placeholder="Lösenord" name="password" required>
-            <br>
-            <a href="#">Glömt Lösenordet?</a>
-            <label class="form-checkbox">
-                <input type="checkbox" name="keepLoggedIn"> Håll mig inloggad (Använder cookies!)</label>
-            <input type="submit" name="action" value="login">
+    <h2>Logga in</h2>
+    <?php loginError() ?>
+    <input type="text" placeholder="Användarnamn" name="user" required>
+    <br>
+    <input type="password" placeholder="Lösenord" name="password" required>
+    <br>
+    <a href="#">Glömt Lösenordet?</a>
+    <label class="form-checkbox">
+        <input type="checkbox" name="keepLoggedIn"> Håll mig inloggad (Använder cookies!)</label>
+    <input type="submit" name="action" value="login">
 </form>
 <a href="registrera.php">Inget konto? Skapa ett!</a>
 <br>

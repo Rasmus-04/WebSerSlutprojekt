@@ -19,7 +19,7 @@ function sendDatabaseData($into, $index, $values){
     $stm->execute();
 }
 
-function getDatabaseData($what, $from, $where="", $order=""){
+function getDatabaseData($what, $from, $where="", $order="", $limit=""){
     global $pdo;
     if($where != ""){
         $where = "WHERE $where";
@@ -27,7 +27,10 @@ function getDatabaseData($what, $from, $where="", $order=""){
     if($order != ""){
         $order = "ORDER BY $order";
     }
-    $sql = "SELECT $what FROM $from $where $order";
+    if($limit != ""){
+        $limit = "LIMIT $limit";
+    }
+    $sql = "SELECT $what FROM $from $where $order $limit";
     $stm = $pdo->prepare($sql);
     $stm->execute();
     return $stm->fetchAll(PDO::FETCH_ASSOC);
@@ -120,7 +123,7 @@ function createUser($username, $pasw, $displayname, $email){
 }
 
 function validateLogin($user, $pasw){
-    $user = trim($user);
+    $user = strtolower(trim($user));
     $data = getDatabaseData("username, pasword", "slutprojekt_user", "username = '$user'")[0];
     if($user == $data["username"] && prepPassword($pasw) == $data["pasword"]){
         return true;
@@ -484,15 +487,15 @@ function generateUserPageHtml($pageId){
     $content = "";
 
     if($_SESSION["activeUserId"] == $pageId){
-        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">inställningar</h2>';
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <a href="settings.php"><h2 class="right">inställningar</h2></a>';
     }elseif(isFriends($pageId, $_SESSION["activeUserId"])){
-        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Ta bort vän</h2>';
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <a href="manager.php?action=removeFriendRequest&amp;senderId='.$_SESSION["activeUserId"].'&reciverId='.$pageId.'&relodTo=userpage.php?userid='.$pageId.'"><h2 class="right">Ta bort vän</h2></a>';
     }elseif(friendRequestRecived($_SESSION["activeUserId"], $pageId)){
-        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Acceptera</h2>';
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right"><a href="manager.php?action=sendFriendRequest&senderId='.$_SESSION["activeUserId"].'&reciverId='.$pageId.'&relodTo=userpage.php?userid='.$pageId.'">Acceptera</a><a href="manager.php?action=denyFriendRequest&senderId='.$_SESSION["activeUserId"].'&reciverId='.$pageId.'&relodTo=userpage.php?userid='.$pageId.'" style="margin-left:1.5rem;">Neka</a></h2>';
     }elseif(friendRequestSent($_SESSION["activeUserId"], $pageId)){
-        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Avbryt förfrågan</h2>';
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <a href="manager.php?action=cancelFriendRequest&senderId='.$_SESSION["activeUserId"].'&reciverId='.$pageId.'&relodTo=userpage.php?userid='.$pageId.'"><h2 class="right">Avbryt förfrågan</h2></a>';
     }else{
-        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <h2 class="right">Lägg till vän</h2>';
+        $content .= '<h2 class="left">'.$user["displayName"].'</h2> <a href="manager.php?action=sendFriendRequest&senderId='.$_SESSION["activeUserId"].'&reciverId='.$pageId.'&relodTo=userpage.php?userid='.$pageId.'"><h2 class="right">Lägg till vän</h2></a>';
     }
 
     $content .= '<h5>@'.getusernameFromId($pageId).'</h5> <h5 style="text-align: right;">Senast aktiv: '.$user["lastSeen"].'</h5>';
@@ -552,9 +555,7 @@ function getCommentHtml($comment, $userId){
     <a href="post.php?postId='.$postId.'#'.$comment["id"].'">Gå till kommentaren</a>
     </section>';
 
-
     return $content;
-
 }
 
 function loadAllUserPagePostsAndComments($userId){
@@ -573,5 +574,30 @@ function loadAllUserPagePostsAndComments($userId){
         
     }
     return $content;
+}
+
+function changeDisplayName($displayname){
+    if(validateUserName($displayname)){
+        updateDatabaseData("slutprojekt_user", "displayName = '$displayname'", "id = '{$_SESSION['activeUserId']}'");
+    }
+}
+
+function changeEmail($email){
+    if(filter_var($email, FILTER_VALIDATE_EMAIL) && !isset(emailExist($email)[0])){
+        updateDatabaseData("slutprojekt_user", "email = '$email'", "id = '{$_SESSION['activeUserId']}'");
+    }
+}
+
+function changePassword($oldPasw, $newPasw, $confirmPasw){
+    $oldPasw = prepPassword($oldPasw);
+    if($newPasw == $confirmPasw){
+        if(validatePassword($newPasw)){
+            $currentPasw = getDatabaseData("pasword", "slutprojekt_user", "id = '{$_SESSION['activeUserId']}'")[0]["pasword"];
+            $newPasw = prepPassword($newPasw);
+            if($currentPasw == $oldPasw){
+                updateDatabaseData("slutprojekt_user", "pasword = '$newPasw'", "id = '{$_SESSION['activeUserId']}'");
+            }
+        }
+    }
 }
 ?>

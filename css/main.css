@@ -49,12 +49,6 @@ h2{
     margin-top: 0.83em;
 }
 
-@media (max-width: 1029px) {
-    main{
-        width: 80%;
-    }
-}
-
 .wrapper {
     display: grid;
     width: 100%;
@@ -130,4 +124,27 @@ h2{
 
 .wrapper h2{
     margin-bottom: 0
+}
+
+@media (max-width: 1029px) {
+    main{
+        width: 80%;
+    }
+    #friendsPage{
+        width: 100%;
+    }
+}
+
+#loadMore{
+    color: white;
+    text-align: center;
+    font-size: 2rem;
+    background-color: #9b4dca;
+    border: 0rem solid #9b4dca;
+    border-radius: 0.4rem;
+    padding: 10px;
+}
+
+#loadMore:hover{
+    background-color: #606c76;
 }

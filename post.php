@@ -33,6 +33,7 @@ include("template.php");
 <div class="comments">
     <?php echo loadAllCommentHtml($_GET["postId"]); ?>
 </div>
+
 </main>
 </body>
 </html>

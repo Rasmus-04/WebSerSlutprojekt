@@ -2,6 +2,12 @@
 include("functions.php");
 validateAccses();
 include("template.php");
+if(isset($_GET["limit"])){
+  $limit = $_GET["limit"];
+}else{
+  $limit = 5;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,8 +32,11 @@ include("template.php");
 <input type="submit" value="Sicka">
 </form>
 <?php
-echo generateAllHtmlPost();
+echo generateAllHtmlPost($limit);
 ?>
+
+<!--<a href="index.php?limit=<?php echo $limit+5 ?>" id="loadMore">Visa Fler</a>-->
+<div style="height: 5rem;"></div>
 </main>
 </body>
 </html>

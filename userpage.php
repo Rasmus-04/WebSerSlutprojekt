@@ -2,6 +2,13 @@
 include("functions.php");
 validateAccses();
 include("template.php");
+
+if(isset($_GET["limit"])){
+    $limit = $_GET["limit"];
+  }else{
+    $limit = 5;
+  }
+  
 ?>
 
 <!DOCTYPE html>
@@ -17,50 +24,17 @@ include("template.php");
 <?php
 echo generateUserPageHtml($_GET["userid"]);
 ?>
+
 </div>
 
 <article>
     <h3>Alla posts och kommentarer</h3>
-
-
     <?php
-    echo loadAllUserPagePostsAndComments($_GET["userid"])
+    echo loadAllUserPagePostsAndComments($_GET["userid"], $limit);
     ?>
-
-    <!--
-    <section>
-    <div class="postHead">
-    <h4>Admin</h4> <h5>Public</h5>
-    </div>
-    <div class="postHead">
-    <h5>Created: 2022-11-29 10:28:33</h5>
-    </div>
-    <p>hej</p>
-    <a href="post.php?postId=7">Gå till inlägget</a>
-    </section>
-
-
-    <section>
-    <div class="postHead">
-    <h4>Admin</h4> <h5>Public</h5>
-    </div>
-    <div class="postHead">
-    <h5>Created: 2022-11-28 12:28:05</h5>
-    
-    </div>
-    <p>hej</p>
-    <a href="post.php?postId=2">Gå till inlägget</a>
-    </section>
-    <section>
-        <div class="postHead">
-        <h4>Test</h4><a href="manager.php?action=deleteComment&commentId=9" onclick="return confirm('Är du säker att du vill ta bort denna kommentar?')">Delete comment</a>
-        </div>
-        <div class="postHead"><h5>Created: 2022-12-01 10:49:19</h5></div>
-        <p>njfew</p>
-<a href="post.php?postId=2">Gå till kommentaren</a>
-    </section>
--->
 </article>
+<!--<a href="userpage.php?userid=<?php echo $_GET["userid"] ?>&limit=<?php echo $limit+5 ?>" id="loadMore">Visa Fler</a>-->
+<div style="height: 5rem;"></div>
 </main>
 </body>
 </html>

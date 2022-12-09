@@ -3,6 +3,11 @@ include("functions.php");
 validateAccses();
 include("template.php");
 $content = generateFriendsSiteHtml($_SESSION["activeUserId"]);
+if(isset($_GET["limit"])){
+    $limit = $_GET["limit"];
+  }else{
+    $limit = 5;
+  }
 ?>
 
 <!DOCTYPE html>
@@ -38,8 +43,10 @@ $content = generateFriendsSiteHtml($_SESSION["activeUserId"]);
 <h2 style="text-align:center;">Alla Post från vänner</h2>
 <article>
 <?php
-echo loadAllFriendsPosts();
+echo loadAllFriendsPosts($limit);
 ?>
+
+<div style="height: 5rem;"></div>
 </article>
 
 </main>

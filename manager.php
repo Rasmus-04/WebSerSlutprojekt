@@ -16,7 +16,18 @@ if(isset($_POST["action"])){
         case "kommentera":
             makeComment($_POST["userText"], $_POST["postId"], $_SESSION["activeUserId"]);
             break;
-    
+        case "changeDisplayname":
+            changeDisplayName($_POST["displayName"]);
+            reload("settings.php");
+            break;
+        case "changeEmail":
+            changeEmail($_POST["email"]);
+            reload("settings.php");
+            break;
+        case "changePasw":
+            changePassword($_POST["oldPasw"], $_POST["password"], $_POST["confirm_password"]);
+            reload("settings.php");
+            break;
     }
 }
 
@@ -73,6 +84,6 @@ if(isset($_GET["action"])){
 
 <pre>
     <?php
-    #print_r(get_defined_vars());
+    print_r(get_defined_vars());
     ?>
 </pre>
