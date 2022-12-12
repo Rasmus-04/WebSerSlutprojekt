@@ -13,8 +13,15 @@
 <body>
 
 <main>
-    <a href="login.php">Logga in!</a>
-<h1>Glömt lösenordet? Gör ett nytt konto!</h1>
+<a href="login.php">Logga in!</a>
+
+<form action="manager.php" method="POST">
+<h1>Återställ lösenord</h1>
+<label for="email">Ange email för kontot</label>
+<input type="email" name="email" placeholder="Email för kontot" id="email" required>
+<input type="hidden" name="action" value="resetPaswMail">
+<input type="submit" name="" value="Återställ lösenord">
+</form>
 <a href="registrera.php">Skapa Konto!</a>
 </main>
 </body>

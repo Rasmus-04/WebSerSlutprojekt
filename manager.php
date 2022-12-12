@@ -28,6 +28,11 @@ if(isset($_POST["action"])){
             changePassword($_POST["oldPasw"], $_POST["password"], $_POST["confirm_password"]);
             reload("settings.php");
             break;
+        case "resetPaswMail":
+            resetPaswMail($_POST["email"]);
+            break;
+        case "resetPasw":
+            break;
     }
 }
 

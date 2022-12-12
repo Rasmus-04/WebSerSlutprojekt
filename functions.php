@@ -1,5 +1,6 @@
 <?php
 require_once("databasConnection.php");
+require_once("mail.php");
 session_start();
 date_default_timezone_set("Europe/Stockholm");
 
@@ -700,5 +701,55 @@ function activate($userId){
         reload("admin.php");
     }
     reload("admin.php", "fail");
+}
+
+function sendMail($to, $subject, $body){
+    global $mail;
+    $mail->addAddress($to);
+    $mail->Subject = ($subject);
+    $mail->Body = $body;
+    
+    $mail->send();
+}
+
+function validateAuthCode($email, $expiryTime, $auth){
+    if(time() > $expiryTime){
+        return false;
+    }
+    $saltBefore = "2#4nL8";
+    $saltAfter = "!59Gf7";
+    $saltMiddle = "8G$3x9";
+    $authCode = prepPassword(sha1("$saltBefore$email$saltMiddle$expiryTime$saltAfter"));
+    if($authCode != $auth){
+        return false;
+    }
+    return true;
+}
+
+function generatePaswResetLink($mail){
+    $expiryTime = time()+3600;
+    $saltBefore = "2#4nL8";
+    $saltAfter = "!59Gf7";
+    $saltMiddle = "8G$3x9";
+    $authCode = prepPassword(sha1("$saltBefore$mail$saltMiddle$expiryTime$saltAfter"));
+    $link = "mail=$mail&expire=$expiryTime&auth=$authCode";
+    return "youtube.com?$link";
+}
+
+function resetPaswMail($email){
+    if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+        reload("resetPasw.php", "invalidEmail");
+    }
+    if(!isset(emailExist($email)[0])){
+        reload("resetPasw.php", "emailnotExsist");
+    }
+
+    $body = "Click here to reset your password: ". generatePaswResetLink($email);
+
+    sendMail($email, "Password Reset", $body);
+}
+
+function resetPasw(){
+    
 }
 ?>
