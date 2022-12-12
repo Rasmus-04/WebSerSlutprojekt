@@ -5,8 +5,9 @@ if(isset($_GET["mail"]) && isset($_GET["expire"]) && isset($_GET["auth"])){
     if(validateAuthCode($_GET["mail"], $_GET["expire"], $_GET["auth"])){
         $content = '<form action="manager.php" method="POST">
         <h1>Ändra Lösenord</h1>
-        <input type="password" name="pasw" id="" placeholder="Lösenord">
-        <input type="password" name="repPasw" id="" placeholder="Uprepa lösenordet">
+        '.paswResetMsg().'
+        <input type="password" name="pasw" id="password" placeholder="Lösenord">
+        <input type="password" name="repPasw" id="confirm_password" placeholder="Uprepa lösenordet">
         <input type="hidden" name="action" value="resetPasw">
 
         <input type="hidden" name="email" value="'.$_GET["mail"].'">
@@ -21,6 +22,13 @@ if(isset($_GET["mail"]) && isset($_GET["expire"]) && isset($_GET["auth"])){
     <br>
     <a href="registrera.php">Skapa Konto!</a>';
     }
+}elseif(isset($_GET["mess"])){
+    $content = paswResetMsg();
+    if($content == ""){
+        reload("index.php");
+    }
+}else{
+    reload("index.php");
 }
 ?>
 
@@ -40,14 +48,8 @@ if(isset($_GET["mail"]) && isset($_GET["expire"]) && isset($_GET["auth"])){
 <body>
 <main style="margin-top:3rem;">
 
-
 <?php echo $content ?>
 
-<pre>
-    <?php
-    #print_r(get_defined_vars());
-    ?>
-</pre>
 </main>
 </body>
 </html>

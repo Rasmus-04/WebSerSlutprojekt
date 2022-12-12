@@ -716,10 +716,14 @@ function validateAuthCode($email, $expiryTime, $auth){
     if(time() > $expiryTime){
         return false;
     }
+    $last = "";
+    if(isset(emailExist($email)[0])){
+        $last = getDatabaseData("pasword", "slutprojekt_user", "email = '$email'")[0]["pasword"];
+    }
     $saltBefore = "2#4nL8";
     $saltAfter = "!59Gf7";
     $saltMiddle = "8G$3x9";
-    $authCode = prepPassword(sha1("$saltBefore$email$saltMiddle$expiryTime$saltAfter"));
+    $authCode = prepPassword(sha1("$saltBefore$email$saltMiddle$expiryTime$saltAfter$last"));
     if($authCode != $auth){
         return false;
     }
@@ -727,13 +731,14 @@ function validateAuthCode($email, $expiryTime, $auth){
 }
 
 function generatePaswResetLink($mail){
+    $last = getDatabaseData("pasword", "slutprojekt_user", "email = '$mail'")[0]["pasword"];
     $expiryTime = time()+3600;
     $saltBefore = "2#4nL8";
     $saltAfter = "!59Gf7";
     $saltMiddle = "8G$3x9";
-    $authCode = prepPassword(sha1("$saltBefore$mail$saltMiddle$expiryTime$saltAfter"));
+    $authCode = prepPassword(sha1("$saltBefore$mail$saltMiddle$expiryTime$saltAfter$last"));
     $link = "mail=$mail&expire=$expiryTime&auth=$authCode";
-    return "youtube.com?$link";
+    return "https://slutprojekt.serrestam.online/changePassword.php?$link";
 }
 
 function resetPaswMail($email){
@@ -749,7 +754,35 @@ function resetPaswMail($email){
     sendMail($email, "Password Reset", $body);
 }
 
-function resetPasw(){
-    
+function resetPasw($pasw, $repPasw, $email, $expire, $auth){
+    if($pasw != $repPasw){
+        reload("changePassword.php", "needSamePasw&mail=$email&expire=$expire&auth=$auth");
+    }
+    if(!validatePassword($pasw)){
+        reload("changePassword.php", "illiglePasw&mail=$email&expire=$expire&auth=$auth");
+    }
+    if(validateAuthCode($email, $expire, $auth)){
+        #change pasw
+        $pasw = prepPassword($pasw);
+        updateDatabaseData("slutprojekt_user", "pasword = '$pasw'", "email = '$email'");
+        reload("changePassword.php", "paswReset");
+    }
+    reload("changePassword.php?mail=$email&expire=$expire&auth=$auth");
+}
+
+function paswResetMsg(){
+    if(isset($_GET["mess"])){
+        switch($_GET["mess"]){
+            case "needSamePasw":
+                return "<p style='color:red;'>Lösenorden måste vara identiska</p>";
+                break;
+            case "illiglePasw":
+                return "<p style='color:red;'>Ogiltligt lösenord</p>";
+                break;
+            case "paswReset":
+                return '<h1 style="color:green;">Ditt lösenord har uppdaterats!</h1><a href="login.php">Logga in!</a>';
+                break;
+        }
+    }
 }
 ?>

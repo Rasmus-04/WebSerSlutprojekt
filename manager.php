@@ -32,6 +32,7 @@ if(isset($_POST["action"])){
             resetPaswMail($_POST["email"]);
             break;
         case "resetPasw":
+            resetPasw($_POST["pasw"], $_POST["repPasw"], $_POST["email"], $_POST["expire"], $_POST["auth"]);
             break;
     }
 }
@@ -98,9 +99,3 @@ if(isset($_GET["action"])){
     }
 }
 ?>
-
-<pre>
-    <?php
-    print_r(get_defined_vars());
-    ?>
-</pre>

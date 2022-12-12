@@ -11,10 +11,7 @@
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-
-<main>
-<a href="login.php">Logga in!</a>
-
+<main style="margin-top: 3rem;">
 <form action="manager.php" method="POST">
 <h1>Återställ lösenord</h1>
 <label for="email">Ange email för kontot</label>
@@ -22,6 +19,8 @@
 <input type="hidden" name="action" value="resetPaswMail">
 <input type="submit" name="" value="Återställ lösenord">
 </form>
+<a href="login.php">Logga in!</a>
+<br>
 <a href="registrera.php">Skapa Konto!</a>
 </main>
 </body>

@@ -5,11 +5,13 @@ require_once "PHPMailer/src/SMTP.php";
 require_once "PHPMailer/src/Exception.php";
 $mail = new PHPMailer();
 
+$password = 'virxqponzxnclvyj';
+
 $mail->isSMTP();
 $mail->Host = 'smtp.gmail.com';
 $mail->SMTPAuth = true;
 $mail->Username = 'slutprojekt.serrestam@gmail.com';
-$mail->Password = '';
+$mail->Password = $password;
 $mail->SMTPSecure = "tls";
 $mail->Port = '587';
 
