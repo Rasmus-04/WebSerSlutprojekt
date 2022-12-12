@@ -35,7 +35,7 @@ if(isset($_COOKIE["activeUser"]) && isset($_COOKIE["valitadecode"])){
     <br>
     <input type="password" placeholder="Lösenord" name="password" required>
     <br>
-    <a href="#">Glömt Lösenordet?</a>
+    <a href="resetPasw.php">Glömt Lösenordet?</a>
     <label class="form-checkbox">
         <input type="checkbox" name="keepLoggedIn"> Håll mig inloggad (Använder cookies!)</label>
     <input type="submit" name="action" value="login">

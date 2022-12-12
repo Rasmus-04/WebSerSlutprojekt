@@ -8,29 +8,20 @@ include("template.php");
 <html lang="en">
 <head>
 <?php echo $head ?>
-
-<script>
-
-var password = document.getElementById("password")
-var confirm_password = document.getElementById("confirm_password");
-
-function validatePassword(){
-  if(password.value != confirm_password.value) {
-    confirm_password.setCustomValidity("Lösenorden är inte identiska");
-  } else {
-    confirm_password.setCustomValidity('');
-  }
-}
-
-password.onchange = validatePassword;
-confirm_password.onkeyup = validatePassword;
-</script>
-
-
 </head>
 <body>
 <?php echo $navbar; ?>
 <main>
+  <?php
+  if(getUserLevel($_SESSION["activeUserId"]) > 1){
+    echo '<a href="admin.php"><h2>Admin Sida</h2></a>'; 
+  }
+  ?>
+  <?php 
+  if(isset($_GET["mess"])){
+    echo settingMsg($_GET["mess"]);
+  }
+  ?>
 <form action="manager.php" method="POST">
     <h2>Byt displayname</h2>
     <input type="text" name="displayName" id="" value="<?php echo getDisplayNameFromId($_SESSION["activeUserId"]) ?>">

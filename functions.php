@@ -124,7 +124,7 @@ function createUser($username, $pasw, $displayname, $email){
 
 function validateLogin($user, $pasw){
     $user = strtolower(trim($user));
-    $data = getDatabaseData("username, pasword", "slutprojekt_user", "username = '$user'")[0];
+    $data = getDatabaseData("username, pasword", "slutprojekt_user", "username = '$user' AND active = 1")[0];
     if($user == $data["username"] && prepPassword($pasw) == $data["pasword"]){
         return true;
     }
@@ -206,11 +206,22 @@ function isFriends($user1, $user2){
     }
 }
 
+function isActiveAccount($userId){
+    if(getDatabaseData("active", "slutprojekt_user", "id = $userId")[0]["active"] == 1){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 function generateAllHtmlPost(){
     $allPosts = getDatabaseData("*", "slutprojekt_post", "active = '1'", "id DESC");
     $content = "";    
 
     foreach($allPosts as $post){
+        if(!isActiveAccount($post["user_id"])){
+            continue;
+        }
         switch($post["privacy"]){
             case "0":
                 $privacy = "Public";
@@ -579,13 +590,17 @@ function loadAllUserPagePostsAndComments($userId){
 function changeDisplayName($displayname){
     if(validateUserName($displayname)){
         updateDatabaseData("slutprojekt_user", "displayName = '$displayname'", "id = '{$_SESSION['activeUserId']}'");
+        reload("settings.php", "displayNameUpdate");
     }
+    reload("settings.php", "invalidDisplayName");
 }
 
 function changeEmail($email){
     if(filter_var($email, FILTER_VALIDATE_EMAIL) && !isset(emailExist($email)[0])){
         updateDatabaseData("slutprojekt_user", "email = '$email'", "id = '{$_SESSION['activeUserId']}'");
+        reload("settings.php", "emailUpdate");
     }
+    reload("settings.php", "invalidEmail");
 }
 
 function changePassword($oldPasw, $newPasw, $confirmPasw){
@@ -596,8 +611,94 @@ function changePassword($oldPasw, $newPasw, $confirmPasw){
             $newPasw = prepPassword($newPasw);
             if($currentPasw == $oldPasw){
                 updateDatabaseData("slutprojekt_user", "pasword = '$newPasw'", "id = '{$_SESSION['activeUserId']}'");
-            }
-        }
+                reload("settings.php", "paswUpdated");
+            }reload("settings.php", "oldNotMatchCurrent");
+        }reload("settings.php", "invalidPasw");
     }
+}
+
+function settingMsg($msg){
+    switch($msg){
+        case "displayNameUpdate":
+            return "<p style='color:green;'>Ditt displayname har uppdaterats!</p>";
+            break;
+        case "invalidDisplayName":
+            return "<p style='color:red;'>Ogiltilgt displayname!</p>";
+            break;
+        case "emailUpdate":
+            return "<p style='color:green;'>Emailen har uppdateras!</p>";
+            break;
+        case "invalidEmail":
+            return "<p style='color:red;'>Ogiltilg email eller så är mailen redan upptagen!</p>";
+            break;
+        case "invalidPasw":
+            return "<p style='color:red;'>Ogiltligt lössenord!</p>";
+            break;
+        case "oldNotMatchCurrent":
+            return "<p style='color:red;'>Gammla lösenordet matchar inte nuvarande lösenord!</p>";
+            break;
+        case "paswUpdated":
+            return "<p style='color:green;'>Ditt lösenord har uppdaterats!</p>";
+            break;
+    }
+}
+
+function loadAllActiveUsers(){
+    $users = getDatabaseData("username, id", "slutprojekt_user", "active = 1 AND level = 0");
+    $content = "";
+    foreach($users as $user){
+    $content .= "<p>".$user["username"]."</p><a href='manager.php?action=makeMod&userId={$user['id']}'>Gör mod</a> <a href='manager.php?action=deActivate&userId={$user['id']}'>Avaktevera</a><hr><hr><hr>";
+    }
+    return $content;
+}
+
+function loadAllMods(){
+    $users = getDatabaseData("username, id", "slutprojekt_user", "active = 1 AND level = 1");
+    $content = "";
+    foreach($users as $user){
+    $content .= "<p>".$user["username"]."</p><a href='manager.php?action=removeMod&userId={$user['id']}'>Ta bort mod</a> <a href='userpage.php?userid=".$user["id"]."'>Profil</a><hr><hr><hr>";
+    }
+    return $content;
+}
+
+function loadAllInactiveAccounts(){
+    $users = getDatabaseData("username, id", "slutprojekt_user", "active = 0");
+    $content = "";
+    foreach($users as $user){
+    $content .= "<p>".$user["username"]."</p><a href='manager.php?action=activate&userId={$user['id']}'>Aktevera</a> <a href='userpage.php?userid=".$user["id"]."'>Profil</a><hr><hr><hr>";
+    }
+    return $content;
+}
+
+function makeMod($userId){
+    if(getUserLevel($_SESSION["activeUserId"]) == 2){
+        updateDatabaseData("slutprojekt_user", "level = 1", "id = $userId");
+        reload("admin.php");
+    }
+    reload("admin.php", "fail");
+}
+
+function removeMod($userId){
+    if(getUserLevel($_SESSION["activeUserId"]) == 2){
+        updateDatabaseData("slutprojekt_user", "level = 0", "id = $userId");
+        reload("admin.php");
+    }
+    reload("admin.php", "fail");
+}
+
+function deactivate($userId){
+    if(getUserLevel($_SESSION["activeUserId"]) == 2){
+        updateDatabaseData("slutprojekt_user", "active = 0", "id = $userId");
+        reload("admin.php");
+    }
+    reload("admin.php", "fail");
+}
+
+function activate($userId){
+    if(getUserLevel($_SESSION["activeUserId"]) == 2){
+        updateDatabaseData("slutprojekt_user", "active = 1", "id = $userId");
+        reload("admin.php");
+    }
+    reload("admin.php", "fail");
 }
 ?>

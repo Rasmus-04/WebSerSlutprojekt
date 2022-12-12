@@ -78,6 +78,18 @@ if(isset($_GET["action"])){
             }
             reload("index.php");
             break;
+        case "makeMod":
+            makeMod($_GET["userId"]);
+            break;
+        case "removeMod":
+            removeMod($_GET["userId"]);
+            break;
+        case "deActivate":
+            deactivate($_GET["userId"]);
+            break;
+        case "activate":
+            activate($_GET["userId"]);
+            break;
     }
 }
 ?>
