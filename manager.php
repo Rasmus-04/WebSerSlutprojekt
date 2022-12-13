@@ -99,3 +99,9 @@ if(isset($_GET["action"])){
     }
 }
 ?>
+
+<pre>
+    <?php
+    print_r(get_defined_vars());
+    ?>
+</pre>

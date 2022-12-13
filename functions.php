@@ -14,6 +14,7 @@ function reload($path, $mess=""){
 }
 
 function sendDatabaseData($into, $index, $values){
+    # Sickar data till datbasen
     global $pdo;
     $sql = "INSERT INTO $into ($index) VALUES ($values);";
     $stm = $pdo->prepare($sql);
@@ -21,6 +22,7 @@ function sendDatabaseData($into, $index, $values){
 }
 
 function getDatabaseData($what, $from, $where="", $order="", $limit=""){
+    # Hämtar data från databasen med några variablar
     global $pdo;
     if($where != ""){
         $where = "WHERE $where";
@@ -38,6 +40,7 @@ function getDatabaseData($what, $from, $where="", $order="", $limit=""){
 }
 
 function updateDatabaseData($what, $set, $where){
+    # uppdaterar en post i databasen
     global $pdo;
     $sql = "UPDATE $what SET $set WHERE $where";
     $stm = $pdo->prepare($sql);
@@ -46,6 +49,7 @@ function updateDatabaseData($what, $set, $where){
 }
 
 function removeDatabaseData($from, $where){
+    # tar bort en post från en tabel
     global $pdo;
     $where = "WHERE $where";
     $sql = "DELETE FROM $from $where;";
@@ -55,6 +59,7 @@ function removeDatabaseData($from, $where){
 }
 
 function containsIllegalChars($input, $x=true){
+    # Kollar om en sträng innehåller vissa chars
     if($x){
         $illegalChars = array("'",'"', "<", "/", "*", "\\", "|", ">", " ", ",", ".", "=", "-");
     }else{
@@ -69,10 +74,12 @@ function containsIllegalChars($input, $x=true){
 }
 
 function currentDateTime(){
+    # Returnar tiden just nu
     return date("Y-m-d H:i:s");
 }
 
 function validateUserName($username){
+    # validerar om användarnamnet är giltligt
     if(containsIllegalChars($username) or strlen($username) > 20 or strlen($username) < 3){
         return false;
     }
@@ -80,6 +87,7 @@ function validateUserName($username){
 }
 
 function validatePassword($pasw){
+     # validerar om lösenordet är giltligt
     if(containsIllegalChars($pasw) or strlen($pasw) > 120 or strlen($pasw) < 3){
         return false;
     }
@@ -87,14 +95,17 @@ function validatePassword($pasw){
 }
 
 function userExist($username){
+    # kollar om användaren finns
     return getDatabaseData("username", "slutprojekt_user", "username = '$username'");
 }
 
 function emailExist($email){
+    # Kollar om mailen finns
     return getDatabaseData("email", "slutprojekt_user", "email = '$email'");
 }
 
 function prepPassword($password){
+    # Saltar och krypterar lösenordet 
     $saltBefore = "gI0&97";
     $saltAfter = "2!8dQ7";
     $password = $saltBefore.$password.$saltAfter;
@@ -103,6 +114,7 @@ function prepPassword($password){
 }
 
 function createUser($username, $pasw, $displayname, $email){
+    # Kollar så all info användaren gav är gilltligt sedan skapar användaren
     $username = trim(mb_strtolower($username));
     if (validateUserName($username) == false){
         reload("registrera.php", "invalidUsername");
@@ -124,6 +136,7 @@ function createUser($username, $pasw, $displayname, $email){
 }
 
 function validateLogin($user, $pasw){
+    # kollar det är rätt lösenord och användarnamn
     $user = strtolower(trim($user));
     $data = getDatabaseData("username, pasword", "slutprojekt_user", "username = '$user' AND active = 1")[0];
     if($user == $data["username"] && prepPassword($pasw) == $data["pasword"]){
@@ -133,7 +146,9 @@ function validateLogin($user, $pasw){
 }
 
 function login($user, $pasw){
+    # Loggar in till ett konto
     if(validateLogin($user, $pasw)){
+        # Kollar om användaren vill vara fortsatt inloggad då sparas data i en cookie
         if(isset($_POST["keepLoggedIn"])){
             setcookie("activeUser", $user, time()+(3600*24));
             setcookie("valitadecode", prepPassword($user), time()+(3600*24));
@@ -142,6 +157,7 @@ function login($user, $pasw){
         $_SESSION["activeUser"] = $user;
         $_SESSION["activeUserId"] = getUserId($_SESSION["activeUser"]);
         $lastSeen = currentDateTime();
+        # uppdaterar last seen
         updateDatabaseData("slutprojekt_user", "lastSeen = '$lastSeen'", "username = '{$_SESSION["activeUser"]}'");
         reload("index.php");
     }else{
@@ -150,12 +166,14 @@ function login($user, $pasw){
 }
 
 function validateAccses(){
+    # Kollar om man är inloggad
     if(!isset($_SESSION["activeUser"])){
         reload("login.php");
     }
 }
 
 function logout(){
+    # Loggar ut från kontot
     if(isset($_COOKIE["activeUser"])){
         setcookie("activeUser", "", time()-(3600*24));
         setcookie("valitadecode", "", time()-(3600*24));
@@ -166,10 +184,12 @@ function logout(){
 }
 
 function getUserId($user){
+    # hämtar id från användarnamnet
     return getDatabaseData("id", "slutprojekt_user", "username = '$user'")[0]["id"];
 }
 
 function makePost($text, $userId, $privacy){
+    # Skapar ett inlägg
     if(containsIllegalChars($text, false)){
         reload("index.php", "illigalChars");
     }
@@ -190,14 +210,17 @@ function makePost($text, $userId, $privacy){
 }
 
 function getDisplayNameFromId($userId){
+    # Hämtar displaynamne från ett id
     return ucfirst(getDatabaseData("displayName", "slutprojekt_user", "id = '$userId'")[0]["displayName"]);
 }
 
 function getusernameFromId($userId){
+    # hämtar användarnamn från ett id
     return ucfirst(getDatabaseData("username", "slutprojekt_user", "id = '$userId'")[0]["username"]);
 }
 
 function isFriends($user1, $user2){
+    # Kollar om 2 användare är vänner
     $a = isset(getDatabaseData("*", "slutprojekt_friends", "reciverId = '$user1' AND user_id = '$user2'")[0]);
     $b = isset(getDatabaseData("*", "slutprojekt_friends", "reciverId = '$user2' AND user_id = '$user1'")[0]);
     if($a && $b){
@@ -208,6 +231,7 @@ function isFriends($user1, $user2){
 }
 
 function isActiveAccount($userId){
+    # Kollar om ett konto är aktivt
     if(getDatabaseData("active", "slutprojekt_user", "id = $userId")[0]["active"] == 1){
         return true;
     }else{
@@ -216,6 +240,7 @@ function isActiveAccount($userId){
 }
 
 function generateAllHtmlPost(){
+    # Hämtar all post data och skapar html kod för varje post
     $allPosts = getDatabaseData("*", "slutprojekt_post", "active = '1'", "id DESC");
     $content = "";    
 
@@ -235,6 +260,7 @@ function generateAllHtmlPost(){
                 break;
         }
 
+        # Kollar så du har tillgång att se posten
         if($privacy == "Friends" && $post["user_id"] != $_SESSION["activeUserId"] && getUserLevel($_SESSION["activeUserId"]) != "2" && getUserLevel($_SESSION["activeUserId"]) != "1"){
             if(!isFriends($_SESSION["activeUserId"], $post["user_id"])){
                 continue;
@@ -248,6 +274,7 @@ function generateAllHtmlPost(){
 }
 
 function getPostHtml($postId, $linkToPost=false, $reloadLink=""){
+    # hämtar html kod för en specific post
     $post = getDatabaseData("*", "slutprojekt_post", "id = '$postId' AND active = '1'", "id DESC");
     if(isset($post[0])){
         $post = $post[0];
@@ -307,12 +334,15 @@ function getPostHtml($postId, $linkToPost=false, $reloadLink=""){
 }
 
 function getUserLevel($userId){
+    # returnar användarens level
     return getDatabaseData("level", "slutprojekt_user", "id = '$userId'")[0]["level"];
 }
 
 function deletePost($postId, $reloadLink="index.php"){
+    # Tar bort en post
     $postOwnerId = getDatabaseData("user_id", "slutprojekt_post", "id = '$postId' AND active = '1'")[0]["user_id"];
 
+    # Kollar så du har tillgång att ta bort denna post
     if($postOwnerId == $_SESSION["activeUserId"] or intval(getUserLevel($_SESSION["activeUserId"])) > 0){
         updateDatabaseData("slutprojekt_post", "active = 0", "id='$postId'");
     }
@@ -320,6 +350,7 @@ function deletePost($postId, $reloadLink="index.php"){
 }
 
 function checkAccsesToPost($userId, $postId){
+    # Kollar om du har tillgång att vara inne på denna post
     $x = getDatabaseData("user_id, privacy", "slutprojekt_post", "id='$postId' AND active = '1'")[0];
     switch($x["privacy"]){
         case "0":
@@ -344,6 +375,7 @@ function checkAccsesToPost($userId, $postId){
 }
 
 function makeComment($comment, $postId, $commmentUserId){
+    # gör en kommentar
     if(!isset(getDatabaseData("id", "slutprojekt_post", "id='$postId' AND active = '1'")[0])){
         reload("index.php");
     }
@@ -356,6 +388,7 @@ function makeComment($comment, $postId, $commmentUserId){
 }
 
 function loadAllCommentHtml($postId){
+    # laddar alla kommentarer på en specifik post och returnar html kod för det
     $comments = getDatabaseData("*", "slutprojekt_comment", "post_id = '$postId'", "id DESC");
     $owner = getDatabaseData("user_id", "slutprojekt_post", "id = '$postId' AND active = '1'")[0];
 
@@ -387,8 +420,10 @@ function loadAllCommentHtml($postId){
 }
 
 function deleteComment($commentId, $userId, $reloadLink="index.php"){
+    # Tar bort en kommentar
     $comment = getDatabaseData("*", "slutprojekt_comment", "id = '$commentId'")[0];
     $owner = getDatabaseData("user_id, id", "slutprojekt_post", "id = '{$comment["post_id"]}' AND active = '1'")[0];
+    # Kollar om du har rätt att ta bort kommentarten
     if($comment["user_id"] == $userId || intval(getUserLevel($userId)) > 0 || $owner["user_id"] == $userId){
         removeDatabaseData("slutprojekt_comment", "id = $commentId");
         if($reloadLink != "index.php"){
@@ -401,6 +436,7 @@ function deleteComment($commentId, $userId, $reloadLink="index.php"){
 }
 
 function registerMsg(){
+    # Medelanden för när du regrestrerar dig
     if(isset($_GET["mess"])){
         switch($_GET["mess"]){
             case "userTaken":
@@ -429,6 +465,7 @@ function registerMsg(){
 }
 
 function loginError(){
+    # Meddelanden för fel när di loggar in
     if(isset($_GET["mess"])){
         switch($_GET["mess"]){
             case "wrongCredentials":
@@ -439,31 +476,38 @@ function loginError(){
 }
 
 function friendRequestRecived($reciver, $sender){
+    # Kollar om en användare har en friend request från en specifik användare
     return isset(getDatabaseData("id", "slutprojekt_friends", "reciverId='$reciver' AND user_id='$sender'")[0]["id"]);
 }
 
 function friendRequestSent($sender, $reciver){
+    # Kollar om jag har sickat en request till en specifik användare
     return isset(getDatabaseData("id", "slutprojekt_friends", "reciverId='$reciver' AND user_id='$sender'")[0]["id"]);
 }
 
 function sendFriendRequest($sender, $reciver){
+    # Sickar en friendrequest
     sendDatabaseData("slutprojekt_friends", "reciverId, user_id", "'$reciver', '$sender'");
 }
 
 function cancelFriendRequest($sender, $reciver){
+    # Avbryter en friend request
     removeDatabaseData("slutprojekt_friends", "reciverId = '$reciver' AND user_id = '$sender'");
 }
 
 function denyFriendRequest($sender, $reciver){
+    # Nekar en friend request
     removeDatabaseData("slutprojekt_friends", "reciverId = '$sender' AND user_id = '$reciver'");
 }
 
 function removeFriendRequest($sender, $reciver){
+    # Tar bort en vän
     removeDatabaseData("slutprojekt_friends", "reciverId = '$reciver' AND user_id = '$sender'");
     removeDatabaseData("slutprojekt_friends", "reciverId = '$sender' AND user_id = '$reciver'");
 }
 
 function generateFriendsSiteHtml($userId){
+    # Genererar html koden för friends sidan
     $users = getDatabaseData("username, id", "slutprojekt_user", "active = 1");
     $allUsersContent = "";
     $myFriendsContent = "";
@@ -490,6 +534,7 @@ function generateFriendsSiteHtml($userId){
 }
 
 function generateUserPageHtml($pageId){
+    # skapar html koden för en specifik userpage
     $user = getDatabaseData("*", "slutprojekt_user", "id='$pageId'");
 
     if(!isset($user[0])){
@@ -516,6 +561,7 @@ function generateUserPageHtml($pageId){
 }
 
 function loadAllFriendsPosts(){
+    # hämtar alla posts gjorda från dina vänner
     $allPosts = getDatabaseData("*", "slutprojekt_post", "active = '1'", "id DESC");
     $content = "";   
 
@@ -530,6 +576,7 @@ function loadAllFriendsPosts(){
 }
 
 function specialRequest($userId){
+    # Hämtar alla post och kommentarer från en user och sorterar det på datum
     global $pdo;
     $sql = "SELECT id, text, created, privacy, 'post' AS Type FROM slutprojekt_post WHERE user_id = $userId AND active = 1 UNION SELECT id, text, created, post_id, 'comment' AS Type FROM slutprojekt_comment WHERE user_id = $userId ORDER BY created DESC;";
     $stm = $pdo->prepare($sql);
@@ -539,6 +586,7 @@ function specialRequest($userId){
 
 
 function getCommentHtml($comment, $userId){
+    # Få all html kod för kommentaren
     $postId = $comment["privacy"];
     $x = "";
     $postData = getDatabaseData("privacy, user_id", "slutprojekt_post", "id = $postId")[0];
@@ -571,6 +619,7 @@ function getCommentHtml($comment, $userId){
 }
 
 function loadAllUserPagePostsAndComments($userId){
+    # Skapar html koden för alla dina kommentarer och inlägg till din userpage
     $allPostAndComments = specialRequest($userId);
     $content = "";
     foreach($allPostAndComments as $post){
@@ -589,6 +638,7 @@ function loadAllUserPagePostsAndComments($userId){
 }
 
 function changeDisplayName($displayname){
+    # Byt displayname
     if(validateUserName($displayname)){
         updateDatabaseData("slutprojekt_user", "displayName = '$displayname'", "id = '{$_SESSION['activeUserId']}'");
         reload("settings.php", "displayNameUpdate");
@@ -597,6 +647,7 @@ function changeDisplayName($displayname){
 }
 
 function changeEmail($email){
+    # Byt email
     if(filter_var($email, FILTER_VALIDATE_EMAIL) && !isset(emailExist($email)[0])){
         updateDatabaseData("slutprojekt_user", "email = '$email'", "id = '{$_SESSION['activeUserId']}'");
         reload("settings.php", "emailUpdate");
@@ -605,6 +656,7 @@ function changeEmail($email){
 }
 
 function changePassword($oldPasw, $newPasw, $confirmPasw){
+    # Byt lösenord
     $oldPasw = prepPassword($oldPasw);
     if($newPasw == $confirmPasw){
         if(validatePassword($newPasw)){
@@ -619,6 +671,7 @@ function changePassword($oldPasw, $newPasw, $confirmPasw){
 }
 
 function settingMsg($msg){
+    # medelanden för setting meddelande
     switch($msg){
         case "displayNameUpdate":
             return "<p style='color:green;'>Ditt displayname har uppdaterats!</p>";
@@ -645,6 +698,7 @@ function settingMsg($msg){
 }
 
 function loadAllActiveUsers(){
+    # skapar hmtl för alla activa användare
     $users = getDatabaseData("username, id", "slutprojekt_user", "active = 1 AND level = 0");
     $content = "";
     foreach($users as $user){
@@ -654,6 +708,7 @@ function loadAllActiveUsers(){
 }
 
 function loadAllMods(){
+    # skapar html kod för alla mods
     $users = getDatabaseData("username, id", "slutprojekt_user", "active = 1 AND level = 1");
     $content = "";
     foreach($users as $user){
@@ -663,6 +718,7 @@ function loadAllMods(){
 }
 
 function loadAllInactiveAccounts(){
+    # ladda alla avakteverade konton
     $users = getDatabaseData("username, id", "slutprojekt_user", "active = 0");
     $content = "";
     foreach($users as $user){
@@ -672,6 +728,7 @@ function loadAllInactiveAccounts(){
 }
 
 function makeMod($userId){
+    # gör en användare till mod
     if(getUserLevel($_SESSION["activeUserId"]) == 2){
         updateDatabaseData("slutprojekt_user", "level = 1", "id = $userId");
         reload("admin.php");
@@ -680,6 +737,7 @@ function makeMod($userId){
 }
 
 function removeMod($userId){
+    # ta bort en mod
     if(getUserLevel($_SESSION["activeUserId"]) == 2){
         updateDatabaseData("slutprojekt_user", "level = 0", "id = $userId");
         reload("admin.php");
@@ -688,6 +746,7 @@ function removeMod($userId){
 }
 
 function deactivate($userId){
+    # av aktevera en användare
     if(getUserLevel($_SESSION["activeUserId"]) == 2){
         updateDatabaseData("slutprojekt_user", "active = 0", "id = $userId");
         reload("admin.php");
@@ -696,6 +755,7 @@ function deactivate($userId){
 }
 
 function activate($userId){
+    # aktevera en användare
     if(getUserLevel($_SESSION["activeUserId"]) == 2){
         updateDatabaseData("slutprojekt_user", "active = 1", "id = $userId");
         reload("admin.php");
@@ -704,6 +764,7 @@ function activate($userId){
 }
 
 function sendMail($to, $subject, $body){
+    # sicka ett mail
     global $mail;
     $mail->addAddress($to);
     $mail->Subject = ($subject);
@@ -713,6 +774,7 @@ function sendMail($to, $subject, $body){
 }
 
 function validateAuthCode($email, $expiryTime, $auth){
+    # Validera din auth kod
     if(time() > $expiryTime){
         return false;
     }
@@ -731,6 +793,7 @@ function validateAuthCode($email, $expiryTime, $auth){
 }
 
 function generatePaswResetLink($mail){
+    # generarar ett password reset länk
     $last = getDatabaseData("pasword", "slutprojekt_user", "email = '$mail'")[0]["pasword"];
     $expiryTime = time()+3600;
     $saltBefore = "2#4nL8";
@@ -742,6 +805,9 @@ function generatePaswResetLink($mail){
 }
 
 function resetPaswMail($email){
+    # sickar en password reset länk till din användare
+
+    # kollar om det är en giltlig mail och mailen finns
     if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
         reload("resetPasw.php", "invalidEmail");
     }
@@ -752,9 +818,11 @@ function resetPaswMail($email){
     $body = "Click here to reset your password: ". generatePaswResetLink($email);
 
     sendMail($email, "Password Reset", $body);
+    reload("resetPasw.php", "emailSent");
 }
 
 function resetPasw($pasw, $repPasw, $email, $expire, $auth){
+    # återställ ditt lösenord
     if($pasw != $repPasw){
         reload("changePassword.php", "needSamePasw&mail=$email&expire=$expire&auth=$auth");
     }
@@ -771,6 +839,7 @@ function resetPasw($pasw, $repPasw, $email, $expire, $auth){
 }
 
 function paswResetMsg(){
+    # meddelande för återställa ditt lösenord
     if(isset($_GET["mess"])){
         switch($_GET["mess"]){
             case "needSamePasw":

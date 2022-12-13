@@ -14,6 +14,13 @@
 <main style="margin-top: 3rem;">
 <form action="manager.php" method="POST">
 <h1>Återställ lösenord</h1>
+<?php
+if(isset($_GET["mess"])){
+    if($_GET["mess"] == "emailSent"){
+        echo "<p style='color:green;'>Mailet har sickats, kolla skräppost om du inte ser mailet.";
+    }
+}
+?>
 <label for="email">Ange email för kontot</label>
 <input type="email" name="email" placeholder="Email för kontot" id="email" required>
 <input type="hidden" name="action" value="resetPaswMail">
